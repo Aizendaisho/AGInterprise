@@ -1,0 +1,94 @@
+# ================================
+# IDEs and editors
+# ================================
+# Visual Studio
+.vs/
+*.suo
+*.user
+*.userosscache
+*.sln.docstates
+
+# Rider
+.idea/
+
+# VS Code
+.vscode/
+
+# ================================
+# .NET build outputs
+# ================================
+bin/
+obj/
+TestResults/
+out/
+
+# ================================
+# .NET user files and settings
+# ================================
+appsettings.Development.json
+appsettings.Local.json
+*.db
+*.db-journal
+
+# ================================
+# Logs
+# ================================
+logs/
+*.log
+
+# ================================
+# OS generated
+# ================================
+Thumbs.db
+Desktop.ini
+
+# ================================
+# Node / front-end
+# ================================
+# dependencies
+node_modules/
+
+# optional npm cache
+.npm
+
+# yarn
+yarn-error.log*
+yarn-debug.log*
+yarn.lock
+
+# pnpm
+pnpm-debug.log*
+
+# lockfiles
+package-lock.json
+.pnpm-lock.yaml
+
+# build output
+dist/
+build/
+public/build/
+.next/      # Next.js
+.nuxt/      # Nuxt.js
+
+# coverage
+coverage/
+*.lcov
+
+# ================================
+# Environment / secrets
+# ================================
+.env
+.env.local
+.env.*.local
+
+# ================================
+# Misc
+# ================================
+*.DS_Store
+*.log
+
+# ================================
+# Optional: JetBrains
+# ================================
+*.iml
+.idea/
