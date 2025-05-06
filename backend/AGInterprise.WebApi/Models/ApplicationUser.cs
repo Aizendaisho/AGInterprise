@@ -1,16 +1,14 @@
-using Microsoft.AspNetCore.Identity;
-using System.ComponentModel.DataAnnotations.Schema;
-
-// Añade esto:
 using AGInterprise.Domain.Entities.Almacenes;
+using Microsoft.AspNetCore.Identity;
 
 namespace AGInterprise.WebApi.Models
 {
     public class ApplicationUser : IdentityUser<int>
     {
+        // FK al almacén: sólo para vendedores
         public int? AlmacenId { get; set; }
 
-        [ForeignKey(nameof(AlmacenId))]
+        // Navegación (opcional)
         public Almacen? Almacen { get; set; }
     }
 }

@@ -12,9 +12,9 @@ namespace AGInterprise.WebApi.Services
 {
     public class AuthService : IAuthService
     {
-        private readonly UserManager<Usuario> _userManager;
-        private readonly RoleManager<IdentityRole<int>> _roleManager;
-        private readonly IConfiguration _configuration;
+        private readonly UserManager<Usuario>               _userManager;
+        private readonly RoleManager<IdentityRole<int>>     _roleManager;
+        private readonly IConfiguration                      _configuration;
 
         public AuthService(
             UserManager<Usuario> userManager,
@@ -26,78 +26,85 @@ namespace AGInterprise.WebApi.Services
             _configuration = configuration;
         }
 
+        /// <summary>
+        /// Valida credenciales y genera un JWT con roles y, si existe, el AlmacenId.
+        /// </summary>
         public async Task<string> LoginAsync(LoginRequest request)
         {
-            // 1) Localiza al usuario por nombre o correo
+            // 1) Busca usuario por nombre o email
             var user = await _userManager.FindByNameAsync(request.Username)
                        ?? await _userManager.FindByEmailAsync(request.Username);
             if (user == null || !await _userManager.CheckPasswordAsync(user, request.Password))
                 throw new Exception("Usuario o contraseña incorrectos.");
 
-            // 2) Carga sus roles
+            // 2) Obtiene roles
             var roles = await _userManager.GetRolesAsync(user);
 
-            // 3) Construye los claims para el JWT
+            // 3) Construye claims
             var claims = new List<Claim>
             {
-                new Claim(JwtRegisteredClaimNames.Sub, user.Id.ToString()),
-                new Claim(ClaimTypes.NameIdentifier, user.Id.ToString()),
-                new Claim(ClaimTypes.Name, user.UserName!),
-                new Claim(JwtRegisteredClaimNames.Email, user.Email ?? "")
+                new Claim(JwtRegisteredClaimNames.Sub,            user.Id.ToString()),
+                new Claim(ClaimTypes.NameIdentifier,              user.Id.ToString()),
+                new Claim(ClaimTypes.Name,                        user.UserName!),
+                new Claim(JwtRegisteredClaimNames.Email,          user.Email ?? "")
             };
-            // agregar almacenId si existe
+
             if (user.AlmacenId.HasValue)
                 claims.Add(new Claim("almacenId", user.AlmacenId.Value.ToString()));
-            // roles
-            foreach(var role in roles)
+
+            foreach (var role in roles)
                 claims.Add(new Claim(ClaimTypes.Role, role));
 
-            // 4) Genera el token
-            var key = new SymmetricSecurityKey(
-                Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
+            // 4) Firma y genera el token
+            var key   = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(_configuration["Jwt:Key"]!));
             var creds = new SigningCredentials(key, SecurityAlgorithms.HmacSha256);
-
             var expires = DateTime.UtcNow.AddHours(2);
-            var token  = new JwtSecurityToken(
-                issuer:  _configuration["Jwt:Issuer"],
-                audience:_configuration["Jwt:Audience"],
-                claims:  claims,
-                expires: expires,
+
+            var token = new JwtSecurityToken(
+                issuer:             _configuration["Jwt:Issuer"],
+                audience:           _configuration["Jwt:Audience"],
+                claims:             claims,
+                expires:            expires,
                 signingCredentials: creds
             );
 
             return new JwtSecurityTokenHandler().WriteToken(token);
         }
 
+        /// <summary>
+        /// Crea un nuevo usuario con rol y, si es Vendedor, asigna un Almacén.
+        /// </summary>
         public async Task RegisterAsync(RegisterRequest request)
         {
-            // Verificar rol válido
-            if (!new[] { "Administrador", "Supervisor", "Vendedor" }
-                  .Contains(request.Role))
+            // 1) Validar rol
+            var validRoles = new[] { "Administrador", "Supervisor", "Vendedor" };
+            if (!validRoles.Contains(request.Role))
                 throw new Exception("Rol inválido.");
 
-            // Si es vendedor, debe llevar almacén
+            // 2) Si es Vendedor, requiere AlmacenId
             if (request.Role == "Vendedor" && request.AlmacenId == null)
                 throw new Exception("Debes asignar un Almacén al Vendedor.");
 
+            // 3) Construir la entidad
             var user = new Usuario
             {
                 UserName  = request.Username,
                 Email     = request.Email,
-                NombreCompleto = request.NombreCompleto,
+                Nombre    = request.Nombre,
                 Activo    = true,
                 AlmacenId = request.Role == "Vendedor" ? request.AlmacenId : null
             };
 
+            // 4) Crear usuario y validar errores
             var result = await _userManager.CreateAsync(user, request.Password);
             if (!result.Succeeded)
                 throw new Exception(string.Join("; ", result.Errors.Select(e => e.Description)));
 
-            // Asegurar el rol existe
+            // 5) Asegurar existencia del rol
             if (!await _roleManager.RoleExistsAsync(request.Role))
                 await _roleManager.CreateAsync(new IdentityRole<int>(request.Role));
 
-            // Asignar el rol
+            // 6) Asignar el rol al usuario
             await _userManager.AddToRoleAsync(user, request.Role);
         }
     }

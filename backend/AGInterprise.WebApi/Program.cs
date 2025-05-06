@@ -13,6 +13,7 @@ using AGInterprise.Application.Interfaces;
 using AGInterprise.Infrastructure.Repositories;
 using AGInterprise.WebApi.Services;
 using AGInterprise.Infrastructure.Services;
+using Microsoft.OpenApi.Models;
 ; // asumiendo tu ExceptionHandlingMiddleware
 
 var builder = WebApplication.CreateBuilder(args);
@@ -101,19 +102,63 @@ builder.Services.AddControllers()
 
 // Swagger / OpenAPI
 builder.Services.AddEndpointsApiExplorer();
-builder.Services.AddSwaggerGen();
+builder.Services.AddSwaggerGen(c =>
+{
+    // 1) Definir el esquema de seguridad “Bearer”
+    c.AddSecurityDefinition("Bearer", new OpenApiSecurityScheme
+    {
+        Description = "JWT Authorization header using the Bearer scheme.\r\n\r\n" +
+                      "Enter ‘Bearer’ [space] and then your token in the text input below.\r\n\r\n" +
+                      "Example: \"Bearer eyJhbGciOiJIUzI1NiIsInR…\"",
+        Name         = "Authorization",
+        In           = ParameterLocation.Header,
+        Type         = SecuritySchemeType.Http,
+        Scheme       = "bearer",
+        BearerFormat = "JWT"
+    });
+
+    c.AddSecurityRequirement(new OpenApiSecurityRequirement {
+        {
+            new OpenApiSecurityScheme {
+                Reference = new OpenApiReference {
+                    Type = ReferenceType.SecurityScheme,
+                    Id   = "Bearer"
+                }
+            },
+            Array.Empty<string>()
+        }
+    });
+});
+
 
 // --- Construir la app ---
 var app = builder.Build();
 
 // Seed de roles fijos
-using (var scope = app.Services.CreateScope())
+using var scope = app.Services.CreateScope();
+var svcProvider = scope.ServiceProvider;
+
+// Seed de roles…
+var roleMgr = svcProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
+// … tu código de roles
+
+// Seed del admin por defecto…
+var userMgr = svcProvider.GetRequiredService<UserManager<Usuario>>();
+if (!await userMgr.Users.AnyAsync())
 {
-    var roleMgr = scope.ServiceProvider.GetRequiredService<RoleManager<IdentityRole<int>>>();
-    foreach (var rol in new[] { "Administrador", "Supervisor", "Vendedor" })
+    var admin = new Usuario {
+        UserName = builder.Configuration["DefaultAdmin:Username"]!,
+        Email    = builder.Configuration["DefaultAdmin:Email"]!
+    };
+
+    var result = await userMgr.CreateAsync(admin, builder.Configuration["DefaultAdmin:Password"]!);
+    if (result.Succeeded)
+        await userMgr.AddToRoleAsync(admin, "Administrador");
+    else
     {
-        if (!await roleMgr.RoleExistsAsync(rol))
-            await roleMgr.CreateAsync(new IdentityRole<int>(rol));
+        var logger = svcProvider.GetRequiredService<ILogger<Program>>();
+        foreach (var err in result.Errors)
+            logger.LogError("Error creando Admin: {Code} {Desc}", err.Code, err.Description);
     }
 }
 
