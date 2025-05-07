@@ -18,6 +18,18 @@ using Microsoft.OpenApi.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowFrontendDev", policy =>
+    {
+        policy
+          .WithOrigins("http://localhost:5173")   // <- URL de tu Vite dev server
+          .AllowAnyHeader()
+          .AllowAnyMethod()
+          .AllowCredentials();                     // si usas cookies o credenciales
+    });
+});
+
 // --- Serilog bootstrap ---
 Log.Logger = new LoggerConfiguration()
     .MinimumLevel.Debug()
@@ -101,6 +113,9 @@ builder.Services.AddControllers()
 #pragma warning restore CS0618 // Type or member is obsolete
 
 // Swagger / OpenAPI
+
+
+
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -133,6 +148,8 @@ builder.Services.AddSwaggerGen(c =>
 
 // --- Construir la app ---
 var app = builder.Build();
+app.UseCors("AllowFrontendDev");
+
 
 // Seed de roles fijos
 using var scope = app.Services.CreateScope();
@@ -160,6 +177,24 @@ if (!await userMgr.Users.AnyAsync())
         foreach (var err in result.Errors)
             logger.LogError("Error creando Admin: {Code} {Desc}", err.Code, err.Description);
     }
+
+
+    // … justo después de crear el Admin …
+var almRepo = svcProvider.GetRequiredService<IAlmacenRepository>();
+var defaultAlm = await almRepo.ObtenerPredeterminadoAsync();
+if (defaultAlm is null)
+{
+    var nuevo = new AGInterprise.Domain.Entities.Almacenes.Almacen
+    {
+        Nombre           = "Almacén Principal",
+        Descripcion      = "Almacén por defecto",
+        Direccion        = "Dirección por defecto",
+        Activo           = true,
+        EsPredeterminado = true
+    };
+    await almRepo.CrearAsync(nuevo);
+}
+
 }
 
 // Middleware de manejo de excepciones

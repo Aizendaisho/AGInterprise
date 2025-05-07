@@ -46,6 +46,21 @@ namespace AGInterprise.Infrastructure.Persistence
             // builder.Entity<ApplicationUser>().ToTable("Usuarios");
             // builder.Entity<IdentityRole<int>>().ToTable("Roles");
             // builder.Entity<IdentityUserRole<int>>().ToTable("UsuarioRoles");
+
+                builder.Entity<Usuario>()
+           .ToTable("Usuarios");
+    builder.Entity<IdentityRole<int>>()
+           .ToTable("Roles");
+    builder.Entity<IdentityUserRole<int>>()
+           .ToTable("UsuarioRoles");
+    builder.Entity<IdentityUserClaim<int>>()
+           .ToTable("UsuarioClaims");
+    builder.Entity<IdentityUserLogin<int>>()
+           .ToTable("UsuarioLogins");
+    builder.Entity<IdentityUserToken<int>>()
+           .ToTable("UsuarioTokens");
+    builder.Entity<IdentityRoleClaim<int>>()
+           .ToTable("RolClaims");
         }
     }
 }
