@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 const Home = lazy(() => import('./Pages/Home'));
 
 function App() {
-  const Home = lazy(() => import('./Pages/Home'));
+const Home = lazy(() => import('./Pages/Home'));
 const Dashboard = lazy(() => import('./Pages/Dashboard'));
 const Products = lazy(() => import('./Pages/Products'));
 const NotFound = lazy(() => import('./Pages/NotFound'));
