@@ -1,9 +1,18 @@
-import React, { Suspense, lazy } from 'react';
+import  { Suspense, lazy, useEffect } from 'react';
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+import { useAuthStore } from './store/useAuthStore';
 
-const Home = lazy(() => import('./Pages/Home'));
+
+
+
 
 function App() {
+  useEffect(() => {
+  const token = localStorage.getItem('auth_token');
+  if (token) {
+    useAuthStore.getState().setAuth(token, null); // podrías luego obtener el usuario con /me
+  }
+}, []);
 const Home = lazy(() => import('./Pages/Home'));
 const Dashboard = lazy(() => import('./Pages/Dashboard'));
 const Products = lazy(() => import('./Pages/Products'));
