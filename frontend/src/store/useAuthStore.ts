@@ -1,14 +1,24 @@
-import { create } from 'zustand';
+// src/store/useAuthStore.ts
+import { create } from 'zustand'
 
 interface AuthState {
-  [x: string]: any;
   token: string | null;
-  setToken: (token: string) => void;
+  user: any;
+  setAuth: (token: string, user: any) => void;
   logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
   token: null,
-  setToken: (token) => set({ token }),
-  logout: () => set({ token: null }),
+  user: null,
+
+  setAuth: (token, user) => {
+    set({ token, user });
+    localStorage.setItem('auth_token', token); // Por si acaso también aquí
+  },
+
+  logout: () => {
+    localStorage.removeItem('auth_token'); // ✅ elimina el token del localStorage
+    set({ token: null, user: null });
+  },
 }));

@@ -1,43 +1,40 @@
-// src/components/LoginModal.tsx
 import React, { useState } from 'react';
-import { AuthAPI } from '../api/api.client';
+
 import { useAuthStore } from '../store/useAuthStore';
-import type { LoginRequest } from '../api/api-types';
+import { useNavigate } from 'react-router-dom';
+import { AuthAPI } from '../api/auth';
 
 const LoginModal = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
-  const [error, setError] = useState('');
-  const setToken = useAuthStore((state) => state.setToken);
+  const setAuth = useAuthStore((state) => state.setAuth);
+  const navigate = useNavigate();
 
   const closeModal = () => {
     const modal = document.getElementById('login_modal') as HTMLDialogElement;
-    if (modal) modal.close();
+    if (modal) {
+      modal.close();
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const request: LoginRequest = {
-      username: email,
-      password,
-    };
-
     try {
-      const response = await AuthAPI.login(request);
-      const token = (response.data as { token?: string }).token;
+      const response = await AuthAPI.login({ username: email, password });
+      const token = response.data?.token;
 
       if (token) {
-        setToken(token);
-        console.log("Token recibido:", token);
+        // ✅ Guardar token en store y localStorage
+        setAuth(token, null); // puedes usar /me luego para obtener el usuario
         localStorage.setItem('auth_token', token);
         closeModal();
+        navigate('/dashboard');
       } else {
-        setError('Token inválido.');
+        console.error('Token no recibido');
       }
-    } catch (err: any) {
-      console.error(err);
-      setError('Credenciales inválidas o error del servidor.');
+    } catch (error) {
+      console.error('Error al iniciar sesión', error);
     }
   };
 
@@ -50,7 +47,6 @@ const LoginModal = () => {
           </button>
         </form>
         <h3 className="font-bold text-lg mb-4">Iniciar Sesión</h3>
-
         <form onSubmit={handleSubmit} className="space-y-4">
           <div className="form-control">
             <label className="label">
@@ -60,12 +56,11 @@ const LoginModal = () => {
               type="text"
               placeholder="correo@ejemplo.com"
               className="input input-bordered w-full"
+              required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              required
             />
           </div>
-
           <div className="form-control">
             <label className="label">
               <span className="label-text">Contraseña</span>
@@ -74,14 +69,11 @@ const LoginModal = () => {
               type="password"
               placeholder="••••••••"
               className="input input-bordered w-full"
+              required
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
             />
           </div>
-
-          {error && <p className="text-red-500 text-sm">{error}</p>}
-
           <div className="modal-action">
             <button type="submit" className="btn btn-primary w-full">
               Ingresar
