@@ -1,15 +1,21 @@
-import { Link } from "react-router";
+// src/components/Footer.tsx
+import React from 'react';
 
-export function Footer() {
-  return (
-    <footer className="py-6 bg-gray-800 text-gray-300">
-      <div className="max-w-6xl mx-auto px-8 flex flex-col md:flex-row justify-between items-center">
-        <span>© {new Date().getFullYear()} AGInterprise. Todos los derechos reservados.</span>
-        <div className="space-x-4 mt-4 md:mt-0">
-          <Link to="/" className="hover:underline">Inicio</Link>
-          <Link to="/login" className="hover:underline">Login</Link>
-        </div>
-      </div>
-    </footer>
-  );
-}
+const Footer = () => (
+  <footer className="footer p-10 bg-base-300 text-base-content">
+    <div>
+      <span className="footer-title">AGInterprise</span>
+      <a className="link link-hover">Acerca de</a>
+      <a className="link link-hover">Contacto</a>
+      <a className="link link-hover">Privacidad</a>
+    </div>
+    <div>
+      <span className="footer-title">Redes Sociales</span>
+      <a className="link link-hover">Twitter</a>
+      <a className="link link-hover">Facebook</a>
+      <a className="link link-hover">Instagram</a>
+    </div>
+  </footer>
+);
+
+export default Footer;

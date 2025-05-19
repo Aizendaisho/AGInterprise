@@ -1,21 +1,28 @@
-import { BrowserRouter, Route, Routes } from 'react-router';
-import './App.css'
-import { LoginPage } from './pages/LoginPage';
-import HomePage from './pages/HomePage';
+import React, { Suspense, lazy } from 'react';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
+
+const Home = lazy(() => import('./Pages/Home'));
 
 function App() {
-  
-
-
+  const Home = lazy(() => import('./Pages/Home'));
+const Dashboard = lazy(() => import('./Pages/Dashboard'));
+const Products = lazy(() => import('./Pages/Products'));
+const NotFound = lazy(() => import('./Pages/NotFound'));
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<HomePage />} index />
-        <Route path="/login" element={<LoginPage />} />
-        {/* aquí tus demás rutas protegidas */}
-      </Routes>
-    </BrowserRouter>
-  )
+    <Router>
+      <Suspense fallback={<div className="flex justify-center items-center h-screen">Cargando...</div>}>
+        <Routes>
+          <Route path="/" element={<Home />} />
+          <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/products" element={<Products />} />
+          <Route path="*" element={<NotFound />} />
+        </Routes>
+      </Suspense>
+    </Router>
+  );
 }
 
-export default App
+
+
+
+export default App;

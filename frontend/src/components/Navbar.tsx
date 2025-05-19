@@ -1,29 +1,28 @@
-import { Button } from "../components/ui/button";
-import { motion } from "framer-motion";
-import { Link } from "react-router";
+// src/components/Navbar.tsx
+import React from 'react';
+import LightDarkMode from './LightDarkMode';
 
-export function Navbar() {
+const Navbar = () => {
+  const openModal = () => {
+    const modal = document.getElementById('login_modal') as HTMLDialogElement;
+    if (modal) {
+      modal.showModal();
+    }
+  };
+
   return (
-    <nav className="w-full px-8 py-4 flex justify-between items-center bg-secondary shadow-sm">
-      <motion.div
-        initial={{ x: -50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.4 }}
-      >
-        <Link to="/">
-          {/* sustituye /logo.png por tu logo real */}
-          <img src="/logo.png" alt="AGInterprise Logo" className="h-8 rounded-md" />
-        </Link>
-      </motion.div>
-      <motion.div
-        initial={{ x: 50, opacity: 0 }}
-        animate={{ x: 0, opacity: 1 }}
-        transition={{ duration: 0.4, delay: 0.1 }}
-      >
-        <Link to="/login">
-          <Button variant="outline">Login</Button>
-        </Link>
-      </motion.div>
-    </nav>
+    <div className="navbar bg-base-100">
+      <div className="flex-1">
+        <a className="btn btn-ghost normal-case text-xl">AGInterprise</a>
+      </div>
+      <div className="flex-none">
+        <LightDarkMode />
+        <button className="btn btn-primary" onClick={openModal}>
+          Login
+        </button>
+      </div>
+    </div>
   );
-}
+};
+
+export default Navbar;
