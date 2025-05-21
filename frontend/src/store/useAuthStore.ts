@@ -3,22 +3,29 @@ import { create } from 'zustand'
 
 interface AuthState {
   token: string | null;
-  user: any;
-  setAuth: (token: string, user: any) => void;
+  userName: string | null;
+  expiresAt: string | null;
+  setAuth: (token: string, userName: string, expiresAt: string) => void;
   logout: () => void;
 }
 
 export const useAuthStore = create<AuthState>((set) => ({
-  token: null,
-  user: null,
+  token: localStorage.getItem('auth_token'),
+  userName: localStorage.getItem('auth_user'),
+  expiresAt: localStorage.getItem('auth_expiresAt'),
 
-  setAuth: (token, user) => {
-    set({ token, user });
-    localStorage.setItem('auth_token', token); // Por si acaso también aquí
+  setAuth: (token, userName, expiresAt) => {
+    set({ token, userName, expiresAt });
+    localStorage.setItem('auth_token', token);
+    localStorage.setItem('auth_user', userName);
+    localStorage.setItem('auth_expiresAt', expiresAt);
   },
 
   logout: () => {
-    localStorage.removeItem('auth_token'); // ✅ elimina el token del localStorage
-    set({ token: null, user: null });
+    localStorage.removeItem('auth_token');
+    localStorage.removeItem('auth_user');
+    localStorage.removeItem('auth_expiresAt');
+    set({ token: null, userName: null, expiresAt: null });
   },
 }));
+

@@ -29,7 +29,7 @@ namespace AGInterprise.WebApi.Services
         /// <summary>
         /// Valida credenciales y genera un JWT con roles y, si existe, el AlmacenId.
         /// </summary>
-        public async Task<string> LoginAsync(LoginRequest request)
+        public async Task<LoginResponse> LoginAsync(LoginRequest request)
         {
             // 1) Busca usuario por nombre o email
             var user = await _userManager.FindByNameAsync(request.Username)
@@ -68,7 +68,14 @@ namespace AGInterprise.WebApi.Services
                 signingCredentials: creds
             );
 
-            return new JwtSecurityTokenHandler().WriteToken(token);
+            var tokenString = new JwtSecurityTokenHandler().WriteToken(token);
+
+            return new LoginResponse
+            {
+                Token = tokenString,
+                UserName = user.UserName!,
+                ExpiresAt = expires
+            };
         }
 
         /// <summary>

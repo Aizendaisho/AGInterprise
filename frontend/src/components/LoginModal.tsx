@@ -23,10 +23,12 @@ const LoginModal = () => {
     try {
       const response = await AuthAPI.login({ username: email, password });
       const token = response.data?.token;
+      const userName = response.data?.userName;
+      const expiresAt = response.data?.expiresAt;
 
       if (token) {
         // ✅ Guardar token en store y localStorage
-        setAuth(token, null); // puedes usar /me luego para obtener el usuario
+        setAuth(token, userName, expiresAt); // puedes usar /me luego para obtener el usuario
         localStorage.setItem('auth_token', token);
         closeModal();
         navigate('/dashboard');

@@ -26,8 +26,8 @@ namespace AGInterprise.WebApi.Controllers
         [AllowAnonymous]
         public async Task<IActionResult> Login([FromBody] LoginRequest req)
         {
-            var token = await _authService.LoginAsync(req);
-            return Ok(new { Token = token });
+            var response = await _authService.LoginAsync(req);
+            return Ok(response);
         }
     }
 }

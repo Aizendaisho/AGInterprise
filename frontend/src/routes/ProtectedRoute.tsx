@@ -1,5 +1,4 @@
 import { Navigate } from 'react-router-dom';
-
 import type { JSX } from 'react';
 import { useAuthStore } from '../store/useAuthStore';
 
@@ -8,6 +7,14 @@ interface Props {
 }
 
 export const ProtectedRoute = ({ children }: Props) => {
-  const token = useAuthStore((state) => state.token);
-  return token ? children : <Navigate to="/" />;
+  const { token, userName, expiresAt, logout } = useAuthStore();
+
+  const isExpired = expiresAt ? Date.now() > new Date(expiresAt).getTime() : true;
+console.log("paso por aqui");
+  if (!token || !userName || isExpired) {
+    logout();
+    return <Navigate to="/" />;
+  }
+
+  return children;
 };

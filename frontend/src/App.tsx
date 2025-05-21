@@ -17,8 +17,14 @@ const PrivateRoute = ({ children }: { children: JSX.Element }) => {
 function App() {
   useEffect(() => {
     const token = localStorage.getItem('auth_token');
+    const userName = localStorage.getItem('auth_user');
+    const expiresAt = localStorage.getItem('auth_expiresAt');
     if (token) {
-      useAuthStore.getState().setAuth(token, null);
+      useAuthStore.getState().setAuth(
+        token ?? '',
+        userName ?? '',
+        expiresAt ?? ''
+      );
     }
   }, []);
 
